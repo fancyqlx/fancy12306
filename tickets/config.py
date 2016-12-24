@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
-import ConfigParser
+import configparser
 
-def loadPassenger(driver):
+def loadPassengers(driver):
     #initmy_url = "https://kyfw.12306.cn/otn/index/initMy12306"
     passengers_url = "https://kyfw.12306.cn/otn/passengers/init"
     driver.get(passengers_url)
-    passengers = []
+    passengers = {}
     count = 0
     while True:
         table = driver.find_element_by_id("passenderALLTable")
         last = table.find_element_by_class("last")
-        if len(passengers)>0 and last.find_element_by_tag_name("tr")[1].text == passengers[-1][1]:
+        if len(passengers)>0 and last.find_element_by_tag_name("tr")[1].text == passengers[count]:
             break
         rows = table.find_elements_by_tag_name("tr")
         for row in rows:
             col = row.find_elements_by_tag_name("td")[1]
             count += 1
-            passengers.append((count, col.text))
+            passengers[count]= col.text
         if len(passengers) == 0:
             print (">>>>>>There is no passengers<<<<<<")
             break
@@ -40,7 +40,7 @@ def ConfigSectionMap(config, section):
 
 def setConfig(username, password, passengers, from_station, to_station, date):
     cfgfile = open("../config.ini","w")
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.add_section("Personal Information")
     config.set("Personal Information","username",username)
     config.set("Personal Information","password",password)
@@ -56,6 +56,10 @@ def setConfig(username, password, passengers, from_station, to_station, date):
     
     
 def readConfig():
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read("../config.ini")
-    passengers = ConfigSectionMap(config, "Passengers")
+    information = {}
+    information.update(ConfigSectionMap(config,"Personal Information"))
+    information.update({"passengers":ConfigSectionMap(config,"Passengers")})
+    information.update(ConfigSectionMap(config,"Tickets Information"))
+    return information

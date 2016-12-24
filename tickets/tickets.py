@@ -2,10 +2,11 @@
 """A command-line interface.
 
 Usage:
-    tickets.py [<username> <password> <from_station> <to_station> <date>]
+    tickets.py [-c]
 
 Options:
-    -h,--help   显示帮助菜单
+    -h,--help   show help
+    -c  set the config
 
 Example:
     tickets.py username password beijing shanghai 2017-01-01
@@ -19,6 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
 from login import login, relogin
 from fancy12306.docopt import docopt
+from config import loadPassengers, readConfig
 
 
 ticket_url = "https://kyfw.12306.cn/otn/leftTicket/init"
@@ -31,11 +33,38 @@ driver = webdriver.Chrome()
 def cli():
     """command-line interface"""
     arguments = docopt(__doc__)
-    username = arguments['<username>']
-    password = arguments['<password>']
-    from_station = arguments['<from_station>']
-    to_station = arguments['<to_station>']
-    date = arguments['<date>']
+    set_config = arguments['-c']
+    information = {}
+    if set_config:
+        username = input("username:")
+        password = input("password")
+        from_station = input("from_station")
+        to_station = input("to_station")
+        date = input("date(eg. 2017-01-01)")
+        information["username"] = username
+        information["password"] = password
+        information["from_station"] = from_station
+        information["to_station"] = to_station
+        information["date"] = date
+        information["passengers"] = {}
+    else:
+        information = readConfig()
+        
+    """Login"""
+    driver.get(ticket_url)
+    while driver.find_element_by_id("login_user").is_displayed():
+        sleep(1)
+        login(information["username"],information["password"],driver)    
+        if driver.current_url == initmy_url:
+            print ("Login Success!")
+            break
+        
+    """Loading passengers"""
+    if len(information["passengers"]) == 0:
+        information["passengers"] = loadPassengers(driver)
+    
+    
+        
 
 def bookTickets(username,password,from_station,to_station,date):
     driver.get(ticket_url)
