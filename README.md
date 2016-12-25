@@ -34,8 +34,8 @@ in *config.ini* or enter it in command-line when you start the program.
 
 ### usage
 
-You just need to put all the codes in no matter where and which fold, then find **tickets.py**. 
-If you just run **`python tickets.py`**, it means the program will load *config.ini* by itself and you needn't input anything later. 
+You just need to put all the codes in no matter which fold, then find **tickets.py**. 
+If you run **`python tickets.py`**, it means the program will load *config.ini* by itself and you needn't input anything later. 
 If you run **`python tickets.py -c`**, the program will not load *config.ini*, you need input some information later 
 and the command-line will guide you to complete it.
 
