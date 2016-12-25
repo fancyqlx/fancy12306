@@ -12,6 +12,10 @@ Example:
     tickets.py username password beijing shanghai 2017-01-01
     tickets.py
 """
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[2]))
+
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -20,7 +24,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
 from login import login, relogin
 from fancy12306.docopt import docopt
-from config import loadPassengers, readConfig
+from config import loadPassengers, setConfig, readConfig
 
 
 ticket_url = "https://kyfw.12306.cn/otn/leftTicket/init"
@@ -36,11 +40,11 @@ def cli():
     set_config = arguments['-c']
     information = {}
     if set_config:
-        username = input("username:")
-        password = input("password")
-        from_station = input("from_station")
-        to_station = input("to_station")
-        date = input("date(eg. 2017-01-01)")
+        username = input("username: ")
+        password = input("password: ")
+        from_station = input("from_station: ")
+        to_station = input("to_station: ")
+        date = input("date(eg. 2017-01-01): ")
         information["username"] = username
         information["password"] = password
         information["from_station"] = from_station
@@ -48,38 +52,58 @@ def cli():
         information["date"] = date
         information["passengers"] = {}
     else:
-        information = readConfig()
+        try:
+            information = readConfig()
+        except:
+            print (">>>>>>There is no information in config.ini<<<<<<")
+            print (">>>>>>You can restart the programe via 'tickets.py -c'<<<<<<")
+            driver.quit()
+            sys.exit()
         
     """Login"""
-    driver.get(ticket_url)
-    while driver.find_element_by_id("login_user").is_displayed():
-        sleep(1)
-        login(information["username"],information["password"],driver)    
-        if driver.current_url == initmy_url:
-            print ("Login Success!")
-            break
-        
+    #driver.get(ticket_url)
+    driver.get(login_url)
+    login(information["username"],information["password"],driver)    
+    print ("Current url is: ", driver.current_url)
+    
     """Loading passengers"""
     if len(information["passengers"]) == 0:
         information["passengers"] = loadPassengers(driver)
     
-    
-        
+    wanted_passengers = {}
+    keys = input("Please enter the numbers of passengers you want to add (eg., 1 2 3 4):").split()
+    for i in keys:
+        wanted_passengers[i] = information["passengers"][i]
+    information["wanted_passengers"] = wanted_passengers
 
-def bookTickets(username,password,from_station,to_station,date):
-    driver.get(ticket_url)
-    while driver.find_element_by_id("login_user").is_displayed():
-        sleep(1)
-        login(username,password,driver)    
-        if driver.current_url == initmy_url:
-            print ("Login Success!")
-            break
+    print (">>>>>>Configuration is finished<<<<<<<<")
+    print ("Passengers you added: ", wanted_passengers)
+    print ("from_station: ", information["from_station"])
+    print ("to_station: ", information["to_station"])    
+    print ("date: ", information["date"])
+    setConfig(information)
+    return information
+    
+def bookTickets(information):
+    username = information["username"]
+    password = information["password"]
+    passengers = information["passengers"]
+    wanted_passengers = information["wanted_passengers"]
+    from_station = information["from_station"]
+    to_station = information["to_station"]
+    date = information["date"]
+    
+    """Booking tickets"""
     
     try:
         print ("Reversing...")
         # 跳回购票页面
         driver.get(ticket_url)
-   
+        if driver.find_element_by_id("login_user").is_displayed():
+            sleep(1)
+            login(username,password,driver)    
+        
+        driver.get(ticket_url)
         # 加载查询信息
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "train_date")))
         #WebDriverWait(driver, 10).until(lambda the_driver: the_driver.find_element_by_id('train_date').is_displayed())
@@ -114,6 +138,11 @@ def bookTickets(username,password,from_station,to_station,date):
         #driver.get(confirm_url)
     except Exception as e:
         print (e)
-    
+
+def lastStep(information,driver):
+    pass
+
+
 if __name__ == '__main__':
-    bookTickets("qlx810773948","810773948qlx","武汉","合肥","2017-01-19")
+    information = cli()
+    bookTickets(information)

@@ -16,6 +16,10 @@ Options:
 Example:
     check beijing shanghai 2016-08-25
 """
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[2]))
+
 from fancy12306.docopt import docopt
 from fancy12306.stations import stations
 import requests
