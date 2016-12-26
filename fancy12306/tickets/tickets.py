@@ -9,7 +9,7 @@ Options:
     -c  set the config
 
 Example:
-    tickets.py username password beijing shanghai 2017-01-01
+    tickets.py -c
     tickets.py
 """
 import sys
