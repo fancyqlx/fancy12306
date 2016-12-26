@@ -6,8 +6,8 @@ This is a simple tool for booking tickets in 12306. We provide some functions to
 using 12306.cn, I think the most annoying thing is enter username, password and select tickets information. Uh-huh, I forget that 
 extremely disgusting verification image, but please forgive me that there is no better way to skip this. Thus what we provide 
 is loading all the informaiton you need except for verification, and simplify the operations as much as possible. This tool 
-has not been finished yet, and we will further imporve it. Although this tool is just a toy that it is a practice for me, I still 
-try my best to provide an useful tool.
+has not been finished yet, and we will further imporve it. Although this tool is just a toy that is a practice for me, I still want 
+to try my best to provide an useful tool.
 
 ## Getting Started
 
